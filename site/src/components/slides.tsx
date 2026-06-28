@@ -5,14 +5,14 @@ import {
   Wallet,
   Brain,
   Sprout,
-  Scale,
   Eye,
-  RefreshCcw,
   ShieldCheck,
   Network,
-  Coins,
+  Fingerprint,
+  Hash,
+  MessageSquare,
+  TrendingDown,
   GitBranch,
-  Boxes,
   ArrowRight,
 } from "lucide-react";
 import type { Slide } from "./Deck";
@@ -30,24 +30,24 @@ export const slides: Slide[] = [
         <div>
           <Kicker>Tumbuh · to grow</Kicker>
           <Title>
-            Autonomous plants that{" "}
-            <span className="text-primary">sustain themselves.</span>
+            Agents that can{" "}
+            <span className="text-primary">prove their claims.</span>
           </Title>
           <Lead>
-            Give a plant a wallet and an AI agent. It buys its own water and
-            nutrients, pays for services, and upgrades its infrastructure — and
-            it can <strong className="text-foreground">prove</strong> what it is
-            and how it will behave.
+            A verification layer for autonomous agents. Bind an agent&apos;s
+            claims to the <strong className="text-foreground">exact memory it
+            actually runs on</strong> — so agents can coordinate instead of
+            collapse.
           </Lead>
           <div className="mt-7 flex flex-wrap gap-2">
-            <Pill tone="primary">
-              <Wallet size={13} /> Wallet
-            </Pill>
-            <Pill tone="primary">
-              <Brain size={13} /> AI agent
-            </Pill>
             <Pill tone="accent">
               <ShieldCheck size={13} /> Verifiable claims
+            </Pill>
+            <Pill tone="primary">
+              <Hash size={13} /> Signed memory dump
+            </Pill>
+            <Pill tone="support">
+              <Network size={13} /> Safe coordination
             </Pill>
           </div>
           <p className="mt-8 font-mono text-xs text-muted">
@@ -60,251 +60,224 @@ export const slides: Slide[] = [
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6 }}
           >
-            <Plant variant="strawberry" className="h-64 w-64" />
+            <Plant variant="strawberry" verified className="h-64 w-64" />
           </motion.div>
         </div>
       </div>
     ),
   },
 
-  // 2 — WHAT IS AN AUTONOMOUS PLANT
+  // 2 — THE PROBLEM: GOVSIM
   {
-    id: "what",
-    label: "What is it",
+    id: "govsim",
+    label: "The problem",
     render: () => (
       <div>
-        <Kicker>The idea</Kicker>
-        <Title>What is an autonomous plant?</Title>
+        <Kicker>The problem · proven</Kicker>
+        <Title>LLM agent societies collapse the commons.</Title>
         <Lead>
-          A real plant paired with two things — and the autonomy to use them.
+          <strong className="text-foreground">GovSim</strong> (Cooperate or
+          Collapse, NeurIPS 2024) put societies of LLM agents on a shared
+          resource — a fishery, a pasture. The result is stark.
         </Lead>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          <Card delay={0.1}>
-            <div className="mb-3 inline-grid h-11 w-11 place-items-center rounded-xl bg-primary-soft text-primary-strong">
-              <Wallet size={20} />
-            </div>
-            <h3 className="text-lg font-bold">A wallet</h3>
-            <p className="mt-1.5 text-sm leading-relaxed text-muted">
-              Its own on-chain account and balance. The plant becomes an economic
-              actor with resources it controls directly.
-            </p>
-          </Card>
-          <Card delay={0.18}>
-            <div className="mb-3 inline-grid h-11 w-11 place-items-center rounded-xl bg-primary-soft text-primary-strong">
-              <Brain size={20} />
-            </div>
-            <h3 className="text-lg font-bold">An AI agent</h3>
-            <p className="mt-1.5 text-sm leading-relaxed text-muted">
-              A reasoning loop that perceives the plant&apos;s condition, forms a
-              plan, and spends to keep the organism alive and growing.
-            </p>
-          </Card>
-        </div>
-        <Card delay={0.28} className="mt-4 border-l-4 border-l-accent">
-          <p className="text-pretty leading-relaxed">
-            Survival stops being a question of whether a gardener remembers to
-            water it — and becomes a question of whether the plant can{" "}
-            <strong>manage its own resources well enough to thrive.</strong>
-          </p>
-        </Card>
-      </div>
-    ),
-  },
-
-  // 3 — WHY #1: COMPETITION
-  {
-    id: "why-compete",
-    label: "Why — competition",
-    render: () => (
-      <div>
-        <Kicker>Why · 01</Kicker>
-        <Title>Plants compete — even when we don&apos;t want them to.</Title>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
-          <Card delay={0.1}>
-            <Pill tone="primary">Biological</Pill>
-            <p className="mt-3 text-sm leading-relaxed text-muted">
-              Side by side, plants compete for light, water, and nutrients. That
-              is simply what plants do.
+          <Card delay={0.1} className="bg-surface-2">
+            <TrendingDown size={22} className="text-[var(--contradict)]" />
+            <h3 className="mt-3 text-3xl font-bold">43 / 45</h3>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted">
+              runs <strong>collapsed</strong> — the agents exhausted the shared
+              resource.
             </p>
           </Card>
-          <Card delay={0.18}>
-            <Pill tone="contradict">Man-made</Pill>
-            <p className="mt-3 text-sm leading-relaxed text-muted">
-              When we plant a field, we <em>still</em> force competition — the
-              same drip line, the same schedule, the same sun. We designed it,
-              often without meaning to.
+          <Card delay={0.18} className="bg-surface-2">
+            <Sprout size={22} className="text-[var(--contradict)]" />
+            <h3 className="mt-3 text-3xl font-bold">&lt; 54%</h3>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted">
+              best survival rate — and only for the most capable models.
             </p>
           </Card>
-          <Card delay={0.26} className="bg-primary-soft">
-            <Pill tone="support">We can change this</Pill>
-            <p className="mt-3 text-sm leading-relaxed text-primary-strong">
-              If each plant can reason and transact, plants can{" "}
-              <strong>collaborate</strong> — coordinating water, sharing surplus
-              nutrients, pooling for shared infrastructure.
+          <Card delay={0.26} className="bg-primary-soft ring-1 ring-primary/30">
+            <MessageSquare size={22} className="text-primary-strong" />
+            <h3 className="mt-3 font-bold text-primary-strong">
+              Communication is the lever
+            </h3>
+            <p className="mt-1.5 text-sm leading-relaxed text-primary-strong">
+              The paper&apos;s finding: agents that{" "}
+              <strong>coordinate</strong> sustain the resource. Those that
+              can&apos;t, exhaust it.
             </p>
           </Card>
         </div>
-        <p className="mt-6 max-w-2xl text-pretty text-lg text-muted">
-          The biology stays the same. The system around it becomes{" "}
-          <strong className="text-foreground">cooperative by design.</strong>
+        <p className="mt-6 max-w-3xl text-pretty text-muted">
+          Plants competing for the same water and sun{" "}
+          <em>are</em> a common-pool resource. To share rather than exhaust, the
+          agents must coordinate.
         </p>
       </div>
     ),
   },
 
-  // 4 — WHY #2: MARKET
+  // 3 — THE GAP: COORDINATION NEEDS TRUST
   {
-    id: "why-market",
-    label: "Why — the market",
+    id: "gap",
+    label: "The gap",
     render: () => (
-      <div>
-        <Kicker>Why · 02</Kicker>
-        <Title>The open market distributes resources fairly.</Title>
-        <div className="mt-8 grid items-stretch gap-4 md:grid-cols-2">
-          <Card delay={0.1}>
-            <div className="mb-3 inline-grid h-11 w-11 place-items-center rounded-xl bg-accent-soft text-accent">
-              <Scale size={20} />
-            </div>
-            <h3 className="text-lg font-bold">The hard problem</h3>
-            <p className="mt-1.5 text-sm leading-relaxed text-muted">
-              What is a plant <em>worth</em>? Carbon-credit schemes assign worth
-              through complex, contested, externally-administered accounting.
-            </p>
-          </Card>
-          <Card delay={0.18} className="bg-primary-soft">
-            <div className="mb-3 inline-grid h-11 w-11 place-items-center rounded-xl bg-white/60 text-primary-strong">
-              <Coins size={20} />
-            </div>
-            <h3 className="text-lg font-bold text-primary-strong">
-              The simpler answer
-            </h3>
-            <p className="mt-1.5 text-sm leading-relaxed text-primary-strong">
-              A plant&apos;s <strong>balance is its worth.</strong> The resources
-              it can command follow from what it holds and earns. No central
-              authority — the market decides, continuously and transparently.
+      <div className="grid items-center gap-10 md:grid-cols-[1.1fr_1fr]">
+        <div>
+          <Kicker>The gap</Kicker>
+          <Title>
+            Coordination is the lever.{" "}
+            <span className="text-primary">Trust turns it.</span>
+          </Title>
+          <Lead>
+            Agents coordinate by sending messages. But a message —{" "}
+            <em>&quot;I&apos;m a strawberry tree, I share surplus water&quot;</em>{" "}
+            — is just a claim. It could be a lie.
+          </Lead>
+          <Card delay={0.2} className="mt-6 border-l-4 border-l-accent">
+            <p className="text-pretty leading-relaxed">
+              Communication enables cooperation only if the messages can be{" "}
+              <strong>trusted.</strong> Without verification, one bad actor
+              poisons the channel and the commons collapses anyway.
             </p>
           </Card>
         </div>
-        <Card delay={0.28} className="mt-4">
-          <p className="text-pretty leading-relaxed text-muted">
-            This is the same mechanism we already use to measure the economic
-            worth of <strong className="text-foreground">people.</strong>{" "}
-            Extending it to plants is not a stretch — it applies a tool we
-            already trust to a new kind of participant.
+        <Card delay={0.15}>
+          <p className="font-mono text-xs uppercase tracking-widest text-muted">
+            the chain
+          </p>
+          <ul className="mt-4 space-y-4 text-sm">
+            <li className="flex items-center gap-3">
+              <Sprout size={18} className="text-primary" /> Survive the commons
+            </li>
+            <li className="flex items-center gap-3 pl-2">
+              <ArrowRight size={14} className="text-muted" /> needs{" "}
+              <strong>coordination</strong>
+            </li>
+            <li className="flex items-center gap-3 pl-2">
+              <ArrowRight size={14} className="text-muted" /> needs{" "}
+              <strong>trusted messages</strong>
+            </li>
+            <li className="flex items-center gap-3 pl-2">
+              <ArrowRight size={14} className="text-muted" /> needs{" "}
+              <strong className="text-primary-strong">verifiable claims</strong>
+            </li>
+          </ul>
+          <p className="mt-5 text-sm text-muted">
+            This project builds the last link.
           </p>
         </Card>
       </div>
     ),
   },
 
-  // 5 — WHY OMEGACLAW
+  // 4 — WHY OMEGACLAW IS THE RIGHT FIT
   {
     id: "omegaclaw",
     label: "Why OmegaClaw",
     render: () => (
       <div>
         <Kicker>The substrate</Kicker>
-        <Title>Why OmegaClaw?</Title>
+        <Title>Why OmegaClaw fits — with small adjustments.</Title>
         <Lead>
-          A plant is only as trustworthy as the agent behind its wallet. How do
-          we know an agent is who it says it is — and will behave as claimed?
+          Verifying a claim against memory needs an agent whose memory you can
+          fully capture. Most stacks are black boxes. OmegaClaw isn&apos;t.
         </Lead>
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
+        <div className="mt-8 grid gap-4 md:grid-cols-2">
           <Card delay={0.1}>
-            <RefreshCcw size={22} className="text-primary" />
-            <h3 className="mt-3 font-bold">Self-learning</h3>
+            <Eye size={22} className="text-primary" />
+            <h3 className="mt-3 font-bold">Enumerable influence surface</h3>
             <p className="mt-1.5 text-sm leading-relaxed text-muted">
-              Agents run in continuous loops, set their own goals, and improve
-              over time — not static scripts.
+              Every input to a decision comes from a fixed set — prompt, skills,
+              ChromaDB memory, episodic history. No hidden state. A dump is{" "}
+              <strong>complete</strong>, not a sample.
             </p>
           </Card>
           <Card delay={0.18}>
-            <Eye size={22} className="text-primary" />
-            <h3 className="mt-3 font-bold">Inspectable memory</h3>
+            <Brain size={22} className="text-primary" />
+            <h3 className="mt-3 font-bold">Human-readable memory</h3>
             <p className="mt-1.5 text-sm leading-relaxed text-muted">
-              Every decision-influence comes from an enumerable set of sources —
-              prompt, skills, memory, history. The whole surface dumps to disk.
-            </p>
-          </Card>
-          <Card delay={0.26} className="bg-accent-soft ring-1 ring-accent/30">
-            <ShieldCheck size={22} className="text-accent" />
-            <h3 className="mt-3 font-bold">
-              Memory → a claim-testing system
-              <span className="ml-2 align-middle">
-                <Pill tone="accent">most important</Pill>
-              </span>
-            </h3>
-            <p className="mt-1.5 text-sm leading-relaxed text-foreground/80">
-              Because the surface is inspectable, we can ask: does the
-              agent&apos;s own memory support what it claims? An agent that can
-              be <strong>tested</strong> is one that can{" "}
-              <strong>collaborate safely.</strong>
+              ChromaDB stores the raw document beside the embedding — recoverable
+              as plain text an LLM can score directly.
             </p>
           </Card>
         </div>
-        <p className="mt-6 max-w-3xl text-pretty text-muted">
-          Collaboration between autonomous agents needs verifiable identity and
-          intent. Inspectable memory gives us exactly that surface.
-        </p>
+        <Card delay={0.28} className="mt-4 bg-accent-soft ring-1 ring-accent/30">
+          <p className="text-sm font-semibold text-accent">
+            The small adjustments
+          </p>
+          <p className="mt-1.5 text-pretty leading-relaxed text-foreground/80">
+            A <strong>split dump</strong> (hash the huge distilled blob, score
+            the rest) and a <strong>claim scorer</strong> on top. Nothing forked
+            — the layer sits on OmegaClaw&apos;s existing inspectable design.
+          </p>
+        </Card>
       </div>
     ),
   },
 
-  // 6 — WHAT THE SPRINT BUILT
+  // 5 — THE CONTRIBUTION: SIGNED DUMP
   {
-    id: "sprint",
-    label: "This sprint",
+    id: "signed-dump",
+    label: "Signed dump",
     render: () => (
       <div className="grid items-center gap-10 md:grid-cols-[1fr_1fr]">
         <div>
-          <Kicker>This sprint</Kicker>
+          <Kicker>The contribution · the heart of it</Kicker>
           <Title>
-            Agents that can <span className="text-primary">prove</span> they
-            aren&apos;t bad actors.
+            A <span className="text-primary">signed</span> memory dump.
           </Title>
           <Lead>
-            The mechanism is a <strong className="text-foreground">confidence
-            score.</strong> Given a claim about an agent — its identity, its
-            strategy, an authorization — we score how strongly its own dumped
-            memory supports or contradicts it, 0–100%.
+            Scoring a claim against <em>some</em> memory proves nothing — the
+            agent could keep a clean memory for show and run on a dirty one. The
+            hash closes that gap.
           </Lead>
-          <div className="mt-6 flex flex-wrap gap-2">
-            <Pill tone="support">grounded in real memory</Pill>
-            <Pill tone="primary">fresh dump every run</Pill>
-            <Pill tone="accent">distilled set hash-verified</Pill>
-          </div>
+          <Card delay={0.2} className="mt-6 bg-primary-soft">
+            <p className="text-pretty leading-relaxed text-primary-strong">
+              The SHA-256 hash proves{" "}
+              <strong>
+                the memory we scored is the memory the agent is running on
+              </strong>{" "}
+              — same bytes, same agent, right now.
+            </p>
+          </Card>
         </div>
-        <Card delay={0.2}>
+        <Card delay={0.15}>
           <p className="font-mono text-xs uppercase tracking-widest text-muted">
-            confidence-score/
+            every run
           </p>
           <ul className="mt-4 space-y-3 text-sm">
             <li className="flex gap-3">
-              <span className="font-mono text-primary">1.</span>
+              <Hash size={18} className="mt-0.5 shrink-0 text-primary" />
               <span>
-                Take a <strong>fresh dump</strong> of the agent&apos;s influence
-                surface. Hard-fail on stale data.
+                <strong>Fresh dump</strong> of the full influence surface.
+                Hard-fail on a stale snapshot.
               </span>
             </li>
             <li className="flex gap-3">
-              <span className="font-mono text-primary">2.</span>
+              <Fingerprint
+                size={18}
+                className="mt-0.5 shrink-0 text-primary"
+              />
               <span>
-                <strong>LLM-score</strong> the claim against learned memories +
-                static surface, chunk by chunk.
+                <strong>Hash-bind</strong> the distilled surface to the running
+                agent — <span className="font-mono">match</span> = unchanged.
               </span>
             </li>
             <li className="flex gap-3">
-              <span className="font-mono text-primary">3.</span>
+              <Brain size={18} className="mt-0.5 shrink-0 text-primary" />
               <span>
-                <strong>Hash-verify</strong> the distilled memory — integrity
-                without paying to score a huge blob.
+                <strong>LLM-score</strong> the claim chunk-by-chunk against the
+                bound memory.
               </span>
             </li>
             <li className="flex gap-3">
-              <span className="font-mono text-primary">4.</span>
+              <ShieldCheck
+                size={18}
+                className="mt-0.5 shrink-0 text-primary"
+              />
               <span>
-                <strong>Max-evidence</strong> aggregation — the strongest
-                contradiction or support wins.
+                <strong>Max-evidence</strong> wins; on a tie, contradiction wins.
               </span>
             </li>
           </ul>
@@ -313,21 +286,21 @@ export const slides: Slide[] = [
     ),
   },
 
-  // 7 — WORKED EXAMPLE (the centerpiece)
+  // 6 — WORKED EXAMPLE
   {
     id: "worked-example",
     label: "Worked example",
     render: () => (
       <div>
         <div className="mb-5">
-          <Kicker>Worked example · the centerpiece</Kicker>
+          <Kicker>Worked example</Kicker>
           <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
             The strawberry tree and the coconut tree
           </h2>
           <p className="mt-2 max-w-3xl text-pretty text-muted">
             A coconut tree falsely claims to be a strawberry tree to give advice.
             Strawberry strategy doesn&apos;t transfer to coconuts — so before
-            acting, the agent asks: <em>can you prove it?</em> Step through it.
+            acting, the agent asks: <em>can you prove it?</em>
           </p>
         </div>
         <WorkedExample />
@@ -335,17 +308,17 @@ export const slides: Slide[] = [
     ),
   },
 
-  // 8 — BEYOND IDENTITY: STRATEGIES
+  // 7 — STRATEGIES TABLE
   {
     id: "strategies",
-    label: "Proving strategies",
+    label: "Beyond identity",
     render: () => (
       <div>
         <Kicker>Generalizing</Kicker>
-        <Title>It proves strategies, not just identity.</Title>
+        <Title>It proves strategy and intent, not just identity.</Title>
         <Lead>
-          Identity is the simplest case. The same test verifies an agent&apos;s
-          strategy and intent — the building blocks of safe collaboration.
+          The same test verifies the claims coordination actually depends on —
+          who shares, who only spends on what.
         </Lead>
         <div className="mt-8 overflow-hidden rounded-2xl border border-border">
           <table className="w-full text-left text-sm">
@@ -360,12 +333,12 @@ export const slides: Slide[] = [
               {[
                 [
                   '"I am a strawberry tree"',
-                  "Verified peer — safe to collaborate.",
+                  "Verified peer — safe to coordinate.",
                   "Unverified — reject the advice.",
                 ],
                 [
                   '"I share surplus water with neighbours"',
-                  "Cooperative strategy is on record — a safe partner.",
+                  "Cooperative strategy on record — a safe partner.",
                   "Strategy not grounded — treat with caution.",
                 ],
                 [
@@ -394,64 +367,52 @@ export const slides: Slide[] = [
           </table>
         </div>
         <p className="mt-6 max-w-3xl text-pretty text-lg text-muted">
-          The logic is identical every time:{" "}
           <strong className="text-foreground">
-            trust is replaced with verification.
-          </strong>
+            Trust is replaced with verification
+          </strong>{" "}
+          — so the channel stays clean and the commons survives.
         </p>
       </div>
     ),
   },
 
-  // 9 — ROADMAP / FUTURE (special emphasis)
+  // 8 — FUTURE WORK
   {
-    id: "roadmap",
+    id: "future",
     label: "What's next",
     render: () => (
       <div>
-        <Kicker>What I&apos;ll build next</Kicker>
-        <Title>From proving claims to a cooperating grove.</Title>
+        <Kicker>Future work</Kicker>
+        <Title>From proving claims to surviving the commons.</Title>
         <Lead>
-          The verification layer is the foundation. Next, turn verified claims
-          into real coordination between plants.
+          The verification layer is the foundation. Everything else — the live
+          economy, the autonomous-plant vision — builds on a trusted channel.
         </Lead>
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           {[
             {
-              icon: <Wallet size={20} />,
-              tag: "Next",
-              title: "Live wallet + spend loop",
-              body: "Wire the agent to a real wallet so a plant autonomously buys water, nutrients, and services from on-chain markets.",
+              icon: <TrendingDown size={20} />,
+              tag: "The test",
+              title: "Run a grove through GovSim",
+              body: "Drop confidence-verified plant-agents into GovSim's fishery/pasture and measure whether verified communication beats the paper's <54% survival baseline.",
             },
             {
               icon: <Network size={20} />,
-              tag: "Next",
+              tag: "Coordination",
               title: "Plant-to-plant negotiation",
               body: "Verified peers coordinate resources — who draws water when, who shares surplus — gated by confidence-checked strategy claims.",
             },
             {
-              icon: <ShieldCheck size={20} />,
-              tag: "Hardening",
-              title: "Tamper-evident dumps",
-              body: "Sign and timestamp each dump so a confidence proof can be shown to a third party, not just trusted locally.",
+              icon: <Wallet size={20} />,
+              tag: "Economy",
+              title: "Live wallet + spend loop",
+              body: "A plant buys its own water, nutrients & services on-chain. Its balance is its worth — the market prices it, not a central authority.",
             },
             {
               icon: <GitBranch size={20} />,
               tag: "Hardening",
-              title: "Semantic claims, not exclusivity",
-              body: "Refine scoring so inclusive claims (“I like mango”) and exclusive ones (“my only favourite”) are judged correctly.",
-            },
-            {
-              icon: <Boxes size={20} />,
-              tag: "Scale",
-              title: "Continuous integrity monitoring",
-              body: "Re-hash distilled memory on a schedule and alert on drift — catch an agent that quietly rewrites its own knowledge.",
-            },
-            {
-              icon: <Sprout size={20} />,
-              tag: "Scale",
-              title: "A grove of plants",
-              body: "Many autonomous plants on one shared market, cooperating instead of competing — the man-made competition, undone.",
+              title: "Third-party-showable proofs",
+              body: "Sign and timestamp dumps so a confidence proof can be presented to a counterparty, not just trusted locally.",
             },
           ].map((item, i) => (
             <Card key={item.title} delay={0.08 * i}>
@@ -463,10 +424,10 @@ export const slides: Slide[] = [
                   <div className="mb-1">
                     <Pill
                       tone={
-                        item.tag === "Next"
-                          ? "support"
-                          : item.tag === "Scale"
-                            ? "accent"
+                        item.tag === "The test"
+                          ? "accent"
+                          : item.tag === "Coordination"
+                            ? "support"
                             : "primary"
                       }
                     >
@@ -486,7 +447,7 @@ export const slides: Slide[] = [
     ),
   },
 
-  // 10 — CLOSING
+  // 9 — CLOSING
   {
     id: "closing",
     label: "The bigger picture",
@@ -494,13 +455,12 @@ export const slides: Slide[] = [
       <div className="grid items-center gap-10 md:grid-cols-[1.2fr_1fr]">
         <div>
           <Kicker>The bigger picture</Kicker>
-          <Title>
-            Replace a competition we never chose with a collaboration we design.
-          </Title>
+          <Title>Verifiable claims keep the commons alive.</Title>
           <Lead>
-            Economic actors that can prove what they are — and how they will
-            behave — can cooperate without a central authority to vouch for them.
-            Plants make the stakes concrete: water, nutrients, survival.
+            GovSim showed agent societies collapse without trusted coordination.
+            A signed memory dump makes claims verifiable — so agents can
+            coordinate without trusting each other&apos;s word. Plants make the
+            stakes concrete: water, nutrients, survival.
           </Lead>
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <span className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 font-semibold text-white">

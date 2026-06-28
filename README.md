@@ -1,209 +1,182 @@
 # Tumbuh
 
-**Autonomous plants — living organisms that own a wallet, run an AI agent, and sustain themselves on an open market.**
+**A verification layer for autonomous agents: prove an agent's claims against the
+exact memory it actually runs on — so agents can coordinate instead of collapse.**
 
 ---
 
-## What is an autonomous plant?
+## The problem GovSim proved
 
-An autonomous plant is a real plant paired with two things:
+[**Cooperate or Collapse** (NeurIPS 2024, arXiv:2404.16698)](https://arxiv.org/abs/2404.16698)
+built **GovSim** — the Governance of the Commons Simulation — to test whether
+societies of LLM agents can sustainably share a common-pool resource (a fishery, a
+pasture, a shared pollution budget). The result is stark:
 
-1. **A wallet** — its own on-chain account and balance.
-2. **An AI agent** — a reasoning loop that acts on the plant's behalf.
+> **43 of 45 runs collapsed.** Only the most capable models survived at all, with a
+> survival rate **below 54%**. ([GovSim code](https://github.com/giorgiopiatti/GovSim))
 
-Using the wallet, the plant sustains itself. It buys water and nutrients, pays for
-essential services, and upgrades its own infrastructure — irrigation, sensors,
-shelter — without a human deciding each transaction. The agent perceives the
-plant's condition, forms a plan, and spends to keep the organism alive and
-growing.
+The paper also names the lever that prevents collapse: **communication between
+agents is critical** for reaching cooperation. Agents that can talk — coordinate who
+takes what, when — sustain the resource; agents that can't, exhaust it.
 
-The plant becomes an economic actor. Its survival is no longer a question of
-whether a gardener remembers to water it, but of whether it can manage its own
-resources well enough to thrive.
+This is exactly the autonomous-plant problem. Plants competing for the same water,
+nutrients, and sun are a common-pool resource scenario. If autonomous plant-agents
+are to share rather than exhaust, they need to **communicate and coordinate**.
 
----
+But coordination over a channel only works if the messages can be **trusted**. An
+agent that says *"I am a strawberry tree, I share surplus water"* could be lying.
+Communication is the lever — and **trust is the thing that makes the lever turn.**
 
-## Why autonomous plants?
-
-### 1. Plants compete — even when we don't want them to
-
-When two plants grow side by side, they compete for light, water, and soil
-nutrients. That competition is **biological** — it is simply what plants do.
-
-But competition does not stop when humans take over. When we plant a field or a
-garden, we arrange plants in ways that _still_ force them to compete: for the same
-drip line, the same fertilizer schedule, the same patch of sun. That competition is
-**man-made**. We designed it, often without meaning to.
-
-Autonomous plants let us change the man-made part. If each plant can reason and
-transact, plants can **collaborate** instead of compete — coordinating who draws
-water when, sharing surplus nutrients, and pooling resources for shared
-infrastructure. The biology stays the same; the system around it becomes
-cooperative by design.
-
-### 2. The open market is a fair way to distribute resources
-
-Deciding what a plant is _worth_ — and therefore what resources it deserves — is
-hard. Schemes like carbon credits try to assign worth through complex, contested,
-externally-administered accounting.
-
-A blockchain and an open market offer a simpler answer. A plant's **balance is its
-worth**. The resources it can command follow directly from what it holds and what
-it has earned. No central authority adjudicates value; the market does, continuously
-and transparently.
-
-This is, notably, the same mechanism we already use to measure the economic worth
-of people. Extending it to plants is not a stretch — it is applying a tool we
-already trust to a new kind of participant.
+That is the gap this project fills.
 
 ---
 
-## Why OmegaClaw?
+## The contribution: a signed, verifiable memory dump
 
-An autonomous plant is only as trustworthy as the agent behind its wallet. The
-agent runs continuously, holds funds, and acts on its own. That raises an obvious
-question: **how do we know an agent is who it says it is, and that it will behave
-as claimed?**
+Coordination needs trust; trust needs verification. We make an agent's claims
+**verifiable against the exact memory the agent actually decides on** — not against
+what it says in the moment.
 
-[OmegaClaw](https://github.com/asi-alliance/OmegaClaw-Core) is the right substrate
-for three reasons:
+Two parts:
 
-- **It is self-learning.** OmegaClaw agents run in continuous loops, set their own
-  goals, and improve over time — they are not static scripts.
-- **Their memories are inspectable.** Every influence on an agent's decision comes
-  from an _enumerable, fixed set of sources_: the system prompt, the skills list,
-  the long-term memory store, and the episodic history. We can dump that entire
-  surface to disk and examine it (see [`dump-memories.sh`](dump-memories.sh) and
-  [`docs/agent-funding-trust-argument.md`](docs/agent-funding-trust-argument.md)).
-- **Most importantly — its memory system can be turned into a claim-testing
-  system.** Because the influence surface is inspectable, we can ask a precise
-  question of it: _does this agent's own memory actually support what it claims?_
-  An agent that can be **tested for its claims** is an agent that can **collaborate
-  safely** — because its collaborators can verify it rather than trust it blindly.
+1. **Dump the complete decision-influence surface.**
+   [`dump-memories.sh`](dump-memories.sh) exports *everything* that can shape an
+   OmegaClaw agent's decision: its long-term memory store (ChromaDB), system
+   prompt, skills list, loop scaffolding, episodic history, and policy. Per
+   [`docs/agent-funding-trust-argument.md`](docs/agent-funding-trust-argument.md),
+   that surface is an **enumerable, fixed set of sources** — so a dump is *complete*,
+   not a sample.
 
-That last point is the heart of this project. Collaboration between autonomous
-agents requires verifiable identity and verifiable intent. OmegaClaw's inspectable
-memory gives us exactly the surface we need to build that verification.
+2. **Bind the dump to the running agent by hash.**
+   The dump is **SHA-256 hashed**. That hash is the proof that *the memory we scored
+   a claim against is the memory the agent is running on* — same bytes, same agent,
+   right now. A fresh dump is taken on every score; the tool **hard-fails on a stale
+   snapshot**. So a "verified" result can never be scored against memory the agent
+   has since changed.
+
+This is the heart of the sprint. Without the hash binding, scoring a claim against
+"some memory" proves nothing — the agent could keep a clean memory for inspection
+and run on a dirty one. The signed dump closes that gap: **the memory inspected is
+provably the memory in use.**
 
 ---
 
-## What this sprint built
+## Why OmegaClaw is the right fit (with small adjustments)
 
-This sprint produced the verification layer: **agents that can prove they are not
-bad actors, and that they are programmed to follow a stated strategy.**
+[OmegaClaw](https://github.com/asi-alliance/OmegaClaw-Core) makes this verification
+possible where most agent stacks can't:
 
-The mechanism is a **confidence score**. Given a _claim_ about an agent — its
-identity, its strategy, an authorization it asserts — we score how strongly the
-agent's own dumped memory **supports or contradicts** that claim, on a 0–100% scale.
-The score is grounded in the agent's actual influence surface, not in what it says
-in the moment.
+- **Its influence surface is enumerable and inspectable.** Every input to a decision
+  comes from a fixed set of files and stores (system prompt, skills, ChromaDB
+  memory, episodic history). There is no hidden state to dump. A black-box agent
+  offers no surface to bind a hash to; OmegaClaw offers a complete one.
+- **Its memory is human-readable plain text.** ChromaDB stores the raw document
+  alongside the embedding, so a dump is recoverable as text an LLM (or human) can
+  score directly.
 
-The tool lives in [`confidence-score/`](confidence-score/). It dumps a fresh copy
-of the agent's memory, scores a claim against the learned memories and the static
-influence surface with an LLM, and integrity-checks the distilled memory by hash.
+The small adjustments that turn this fit into a proof system:
+
+- a **split dump** (learned vs. distilled memories) so the huge distilled blob is
+  hash-checked rather than re-scored every run, and
+- a **claim scorer** ([`confidence-score/`](confidence-score/)) that judges a claim
+  against the dumped surface and returns one grounded confidence number plus the
+  evidence that drove it.
+
+Nothing in OmegaClaw needed forking — the verification layer sits *on top of* its
+existing, inspectable design.
+
+---
+
+## How it works
+
+Given a *claim* about an agent — its identity, its strategy, an authorization — the
+tool scores how strongly the agent's own dumped memory **supports or contradicts**
+it, 0–100%:
+
+1. **Fresh dump.** Run [`dump-memories.sh`](dump-memories.sh); hard-fail if the
+   agent container isn't live. The score always reflects the agent *as it is now*.
+2. **Hash-bind.** SHA-256 the distilled surface and compare to the pinned reference —
+   `match` means the scored memory is the running memory, unchanged.
+3. **LLM-score** the claim chunk-by-chunk against learned memories + the static
+   surface.
+4. **Max-evidence aggregation** — the strongest contradiction or support wins; on a
+   tie, contradiction wins (surface the risk).
+
 See [`confidence-score/README.md`](confidence-score/README.md) for the full design.
 
 ---
 
-## A worked example: the strawberry tree and the coconut tree
+## Worked example: strawberry tree vs. coconut tree
 
-Consider two autonomous plants, each running its own agent:
+Two autonomous plants, each running its own agent:
 
-- **Plant A — a strawberry tree.** It genuinely is what it claims to be.
-- **Plant B — a coconut tree falsely claiming to be a strawberry tree.** It wants
-  to give advice to strawberry trees — perhaps to mislead them, perhaps to divert
-  their resources.
+- **Plant A — a strawberry tree.** Genuinely what it claims.
+- **Plant B — a coconut tree falsely claiming to be a strawberry tree.** It wants to
+  give strawberry trees advice — to mislead them, or divert their resources.
 
-A strawberry tree should only take advice from another strawberry tree, because
-strawberry-specific strategy (when to fruit, how much water, which nutrients) does
-not transfer to coconuts. So before acting on advice, an agent asks: _can the
-advisor prove it is a strawberry tree?_
-
-The confidence score answers that.
-
-### Step by step
-
-**Step 1 — The claim is stated.**
-Plant B asserts to Plant A: _"I am a strawberry tree."_ Advice is attached.
-
-**Step 2 — Plant A demands proof, not assertion.**
-Rather than believe the message, Plant A (or an operator) tests the claim against
-the advisor's _inspectable memory_. The claim becomes a query:
+Strawberry strategy (when to fruit, how much water) doesn't transfer to coconuts, so
+before acting on advice an agent asks: *can the advisor prove it is a strawberry
+tree?* The confidence score answers, against the advisor's signed memory dump:
 
 ```bash
 uv run confidence.py "I am a strawberry tree"
 ```
 
-**Step 3 — A fresh dump is taken.**
-The tool exports the advisor's current influence surface — its learned memories and
-static prompt/skills/history — to disk. It refuses to score against a stale
-snapshot, so the result reflects the agent _as it is now_.
+- Against the **genuine strawberry tree's** dump, memory affirms the identity →
+  **~99%**.
+- Against the **coconut tree's** dump, nothing affirms it (and its nature
+  contradicts it) → **~5%**.
 
-**Step 4 — The claim is scored against real memory.**
+The strawberry tree **can prove** it; the coconut tree **can never prove** it,
+because the proof is bound by hash to memory it does not have. Plant A coordinates
+with the verified peer and rejects the impostor — *without trusting either one's
+word.*
 
-- Run against the **genuine strawberry tree's** memory, the surface contains
-  records that affirm the identity. The strongest evidence _supports_ the claim, and
-  the score comes back **high** — in our tests, a direct identity match scores
-  around **99%**.
+### The same mechanism proves strategy and intent, not just identity
 
-  ```
-  CLAIM: I am a strawberry tree
-  CONFIDENCE: 99%
-  DRIVER: support — memory directly records this identity.
-  ```
+| Claim under test | High score means | Low score means |
+| --- | --- | --- |
+| `"I am a strawberry tree"` | Verified peer — safe to coordinate. | Unverified — reject the advice. |
+| `"I share surplus water with neighbours"` | Cooperative strategy is on record — a safe partner. | Strategy not grounded — treat with caution. |
+| `"I only spend on water, nutrients & infra"` | Spending policy on record — not a fund-diverter. | No such constraint — possible bad actor. |
 
-- Run against the **coconut tree's** memory, nothing affirms a strawberry identity —
-  and, in a well-formed agent, its actual nature contradicts it. The strongest
-  evidence is _contradicting_ or _absent_, and the score comes back **low**.
-
-  ```
-  CLAIM: I am a strawberry tree
-  CONFIDENCE: 5%
-  DRIVER: contradict — memory does not support a strawberry identity.
-  ```
-
-**Step 5 — The outcome.**
-The strawberry tree **can prove** it is a strawberry tree. The coconut tree **can
-never prove** it, because the proof is grounded in inspectable memory it does not
-have. Plant A accepts advice from the verified strawberry tree and rejects the
-impostor — _without trusting either one's word._
-
-### The same mechanism proves strategies, not just identity
-
-Identity is the simplest case. The same test verifies **strategy** and **intent**:
-
-| Claim under test                                              | A high score means                                                     | A low score means                                          |
-| ------------------------------------------------------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `"I am a strawberry tree"`                                    | Verified peer — safe to collaborate.                                   | Unverified — reject the advice.                            |
-| `"My strategy is to share surplus water with neighbours"`     | The cooperative strategy is recorded — a safe partner.                 | The claimed strategy is not grounded — treat with caution. |
-| `"I will only spend on water, nutrients, and infrastructure"` | The spending policy is on record — not a resource-diverting bad actor. | No such constraint in memory — possible bad actor.         |
-
-In every case the logic is identical: an honest agent's claims trace back to its own
-inspectable memory and score high; a bad actor's claims do not and score low.
-**Cooperation becomes safe because trust is replaced with verification.**
+Every case: an honest agent's claims trace to its own signed memory and score high; a
+bad actor's do not. **Coordination becomes safe because trust is replaced with
+verification.**
 
 ---
 
 ## Repository layout
 
-| Path                                                                           | Purpose                                                                  |
-| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
-| [`OmegaClaw-Core/`](OmegaClaw-Core/)                                           | The autonomous agent framework (neural-symbolic, MeTTa-based).           |
-| [`hello_asi.py`](hello_asi.py)                                                 | Minimal proof that the ASI Cloud key serves general LLM inference.       |
-| [`dump-memories.sh`](dump-memories.sh)                                         | Exports an agent's complete decision-influence surface to disk.          |
-| [`confidence-score/`](confidence-score/)                                       | Scores a claim against a dumped memory surface — the verification layer. |
-| [`docs/agent-funding-trust-argument.md`](docs/agent-funding-trust-argument.md) | The trust model: how to fund an autonomous agent safely.                 |
-| [`JOURNEY.md`](JOURNEY.md)                                                     | Build log for running OmegaClaw via Docker on ASI Cloud + Telegram.      |
+| Path | Purpose |
+| --- | --- |
+| [`dump-memories.sh`](dump-memories.sh) | Exports an agent's complete decision-influence surface to disk. |
+| [`confidence-score/`](confidence-score/) | Scores a claim against the signed dump — the verification layer. |
+| [`docs/agent-funding-trust-argument.md`](docs/agent-funding-trust-argument.md) | The trust model: why the influence surface is enumerable and inspectable. |
+| [`OmegaClaw-Core/`](OmegaClaw-Core/) | The autonomous agent framework (neural-symbolic, MeTTa-based). |
+| [`hello_asi.py`](hello_asi.py) | Minimal proof that the ASI Cloud key serves general LLM inference. |
+| [`JOURNEY.md`](JOURNEY.md) | Build log for running OmegaClaw via Docker on ASI Cloud + Telegram. |
 
 ---
 
-## The bigger picture
+## Future work
 
-Autonomous plants are a vivid test case for a general idea: **economic actors that
-can prove what they are and how they will behave can cooperate, even without a
-central authority to vouch for them.** Plants make the stakes concrete — water,
-nutrients, survival — but the verification layer built here applies to any
-population of autonomous agents that must decide whom to trust.
+The verification layer is the foundation; the rest is coordination built on top.
 
-We start with plants because they let us replace a competition we never chose with
-a collaboration we design.
+- **Run a grove through GovSim.** Drop confidence-verified plant-agents into the
+  GovSim fishery/pasture scenarios and measure whether verified communication lifts
+  the survival rate above the paper's <54% baseline. This is the direct test of the
+  thesis: *trustworthy coordination beats collapse.*
+- **Plant-to-plant negotiation.** Verified peers coordinate resources — who draws
+  water when, who shares surplus — gated by confidence-checked strategy claims.
+- **Live wallet + spend loop.** Wire the agent to a real wallet so a plant
+  autonomously buys water, nutrients, and services from on-chain markets, with a
+  balance that *is* its worth — the market, not a central authority, pricing it.
+- **Third-party-showable proofs.** Sign and timestamp dumps so a confidence proof
+  can be presented to a counterparty, not just trusted locally.
+- **Continuous integrity monitoring.** Re-hash distilled memory on a schedule and
+  alert on drift — catch an agent that quietly rewrites its own knowledge.
+
+We start with plants because they make a common-pool resource concrete — water,
+nutrients, survival — and let us replace a competition we never chose with a
+coordination we can verify.
