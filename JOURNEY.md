@@ -99,6 +99,63 @@ semantic recall. **Persists** → restarts skip re-embedding and boot in seconds
 - Logs show `POST /asicloud/chat/completions … 200 OK` and `[TELEGRAM] Polling started`.
 - Bot replies in Telegram after `auth <secret>`.
 
+## Inspecting memories (ChromaDB)
+
+Long-term memory = ChromaDB inside the `omegaclaw-memory` volume:
+`/PeTTa/repos/OmegaClaw-Core/memory/chroma_db/chroma.sqlite3`. One collection `memories`.
+
+- Container has **no `sqlite3` CLI** — use the bundled `chromadb` python client (`chromadb 1.5.9`).
+- Record shape: `documents` = memory text, `metadatas` = `time` (+ `procedure`/`domain` on KB chunks).
+- Two kinds of ids:
+  - `distilled_<sourcefile>_chunk_N` — shipped knowledge base (chunked → LLM-distilled →
+    embedded at first boot). The bulk (~27650).
+  - `curriculum_mem_*` and uuids — **agent-learned** at runtime (~234). This is what changes.
+
+**List collections + counts:**
+```bash
+docker exec omegaclaw python3 -c '
+import chromadb
+c=chromadb.PersistentClient(path="/PeTTa/repos/OmegaClaw-Core/memory/chroma_db")
+print([(col.name, col.count()) for col in c.list_collections()])
+'
+```
+
+**Show only agent-learned memories (skip shipped KB):**
+```bash
+docker exec omegaclaw python3 -c '
+import chromadb
+c=chromadb.PersistentClient(path="/PeTTa/repos/OmegaClaw-Core/memory/chroma_db")
+r=c.get_collection("memories").get(include=["documents","metadatas"])
+for i,d,m in zip(r["ids"], r["documents"], r["metadatas"]):
+    if not i.startswith("distilled_"):
+        print(m.get("time"), "|", d)
+'
+```
+
+**Semantic search (what the agent recalls for a query):**
+```bash
+docker exec omegaclaw python3 -c '
+import chromadb
+c=chromadb.PersistentClient(path="/PeTTa/repos/OmegaClaw-Core/memory/chroma_db")
+r=c.get_collection("memories").query(query_texts=["favorite fruit"], n_results=5, include=["documents","distances"])
+for d,dist in zip(r["documents"][0], r["distances"][0]): print(round(dist,3), d)
+'
+```
+
+**Dump learned memories to host jsonl** — use the script:
+```bash
+./dump-memories.sh                       # -> memory_dump/dump_nondistilled.jsonl
+./dump-memories.sh path/to/out.jsonl     # custom output path
+```
+Skips shipped KB (`distilled_*`), keeps only agent-learned records (~235, ≈70 KB). Writes into
+the memory **volume** first (container runs `--tmpfs /tmp`, unreachable by `docker cp`), then
+copies out and cleans up. Output excludes embedding vectors. `memory_dump/` is gitignored.
+
+Read-only `.get()`/`.query()` is safe while the agent runs; don't add/delete via a second client
+(lock contention with the live agent).
+
+Also human-readable: `memory/history.metta` — the agent's conversation/action log.
+
 ## Pitfalls
 
 - LLM 401 → wrong key for the provider. The key must match the provider: an **ASI Cloud**
