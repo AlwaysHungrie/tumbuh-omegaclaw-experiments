@@ -1,0 +1,17 @@
+OmegaClaw influence-surface dump
+generated: 2026-06-29T14:52:39Z
+container: omegaclaw
+chroma:    /PeTTa/repos/OmegaClaw-Core/memory/chroma_db
+
+ChromaDB memories collection:
+  learned_memories.jsonl     238 records (non-distilled, raw)
+  distilled_memories.jsonl   27650 records (agent distillations)
+
+influence-surface/ (static decision inputs, per agent-funding-trust-argument §1.1):
+history.metta
+loop.metta
+memory.metta
+policy.yaml
+prompt_ASICloud.txt
+prompt.txt
+skills.metta
